@@ -1,5 +1,4 @@
 
-import sys
 from pathlib import Path
 
 import torch
@@ -9,29 +8,20 @@ from language_model.models import (
     ResidualSingleHeadLanguageModel,
     ResidualMLPLanguageModel,
 )
+from language_model.tokenizer import Tokenizer
 
 
 # ---- paths ----
 
-TOKENIZER_DIR = Path.home() / "tokenizer" / "tokenizer"
-
 TOKENIZER_MODEL_PATH = (
-    TOKENIZER_DIR
-    / "artifacts"
+    Path(__file__).resolve().parent
+    / "language_model"
     / "tokenizer"
-    / "v1"
     / "tokenizer_model.json"
 )
 
 # Change this path to switch checkpoints.
 CHECKPOINT_PATH = Path("experiments/exp06_residual_50k/models/exp06_scratch_residual_50k.pt")
-
-
-# ---- import YOUR tokenizer ----
-
-sys.path.insert(0, str(TOKENIZER_DIR))
-
-from tokenizer import Tokenizer
 
 
 # ---- generation settings ----
