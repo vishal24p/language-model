@@ -3,7 +3,7 @@
 ## [0.1.1] - 2026-10-24
 
 ### Added
-- Generate text with the tokenizer and model bundled in the repository.
+- Generate text with `uv run python generate.py` using the bundled tokenizer files; generation still needs a local model checkpoint.
 
 ### Fixed
 - Replace invalid UTF-8 model output instead of terminating generation.

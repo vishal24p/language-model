@@ -12,4 +12,5 @@ and requires 100% line coverage. Use temporary JSON model fixtures for unit
 tests; cover encoding, decoding, Unicode, special tokens, and invalid input.
 
 The generator also has a manual smoke check: `uv run python generate.py`, then
-enter `exit` at the prompt. It requires a local checkpoint in `experiments/`.
+enter `exit` at the prompt. It requires the local checkpoint
+`experiments/exp06_residual_50k/models/exp06_scratch_residual_50k.pt`.
