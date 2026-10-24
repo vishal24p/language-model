@@ -1,0 +1,12 @@
+{
+  "checkpoint": "experiments/exp03_learning_rate/models/exp03_lr_1e-4_50k.pt",
+  "train_steps": 50000,
+  "validation_file": "data\\val.bin",
+  "validation_sha256": "540562ce59612b2cac9ec69a36d3c8d456a689b2a064dcae82372c956dc545cc",
+  "windows": 1024,
+  "evaluated_tokens": 131072,
+  "context_length": 128,
+  "validation_loss": 5.867123544216156,
+  "perplexity": 353.2314628630433,
+  "top1_accuracy_percent": 14.145660400390625
+}

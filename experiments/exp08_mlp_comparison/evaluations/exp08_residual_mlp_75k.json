@@ -1,0 +1,13 @@
+{
+  "checkpoint": "experiments/exp08_mlp_comparison/models/exp08_residual_mlp_75k.pt",
+  "architecture": "residual_mlp",
+  "train_steps": 75000,
+  "validation_file": "data\\val.bin",
+  "validation_sha256": "540562ce59612b2cac9ec69a36d3c8d456a689b2a064dcae82372c956dc545cc",
+  "windows": 1024,
+  "evaluated_tokens": 131072,
+  "context_length": 128,
+  "validation_loss": 5.44143582880497,
+  "perplexity": 230.77329663956965,
+  "top1_accuracy_percent": 17.071533203125
+}

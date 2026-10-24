@@ -1,0 +1,13 @@
+{
+  "checkpoint": "experiments/exp06_residual_50k/models/exp06_scratch_residual_30k.pt",
+  "architecture": "residual",
+  "train_steps": 30000,
+  "validation_file": "data\\val.bin",
+  "validation_sha256": "540562ce59612b2cac9ec69a36d3c8d456a689b2a064dcae82372c956dc545cc",
+  "windows": 1024,
+  "evaluated_tokens": 131072,
+  "context_length": 128,
+  "validation_loss": 5.810891360044479,
+  "perplexity": 333.9166330066446,
+  "top1_accuracy_percent": 14.733123779296875
+}

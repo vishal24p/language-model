@@ -1,0 +1,12 @@
+{
+  "checkpoint": "experiments/exp01_30k_vs_40k/models/exp01_30k.pt",
+  "train_steps": 30000,
+  "validation_file": "data\\val.bin",
+  "validation_sha256": "540562ce59612b2cac9ec69a36d3c8d456a689b2a064dcae82372c956dc545cc",
+  "windows": 1024,
+  "evaluated_tokens": 131072,
+  "context_length": 128,
+  "validation_loss": 6.039818108081818,
+  "perplexity": 419.8166666827179,
+  "top1_accuracy_percent": 13.1591796875
+}

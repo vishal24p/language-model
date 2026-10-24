@@ -3,7 +3,12 @@ name = "llm"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
+    "huggingface-hub>=2.2.0",
+    "matplotlib>=3.11.2",
     "numpy==2.4.6",
+    "regex>=2026.9.29",
+    "tensorboard>=2.21.0",
+    "tokenizers>=0.23.3",
     "torch==2.14.0",
 ]
 
