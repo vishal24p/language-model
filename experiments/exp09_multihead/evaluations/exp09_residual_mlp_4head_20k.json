@@ -1,0 +1,13 @@
+{
+  "checkpoint": "experiments/exp09_multihead/models/exp09_residual_mlp_4head_20k.pt",
+  "architecture": "residual_mlp_4head",
+  "train_steps": 20000,
+  "validation_file": "data\\val.bin",
+  "validation_sha256": "540562ce59612b2cac9ec69a36d3c8d456a689b2a064dcae82372c956dc545cc",
+  "windows": 1024,
+  "evaluated_tokens": 131072,
+  "context_length": 128,
+  "validation_loss": 5.894725292921066,
+  "perplexity": 363.11707136652956,
+  "top1_accuracy_percent": 14.104461669921875
+}
