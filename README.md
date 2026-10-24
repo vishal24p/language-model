@@ -12,6 +12,7 @@ A small causal language model built with PyTorch. The experiments test training 
 - `artifacts/legacy_graphs/` — older graphs that are not mapped to one experiment.
 - `hf_release/` — recent model release files, ignored by Git.
 - `data/` — local training data. This folder is ignored by Git.
+- Language-model checkpoints stay local and are not committed.
 
 ## Run
 
@@ -28,4 +29,6 @@ uv run python eval.py experiments/exp06_residual_50k/models/exp06_scratch_residu
 uv run python generate.py
 ```
 
-Experiments 02 and 06 have saved outputs, but no runner in this checkout. Checkpoint files are not committed. Training requires local files in `data/`. `generate.py` uses the tokenizer at `~/tokenizer/tokenizer`.
+Generation uses the tokenizer implementation and model included in `language_model/tokenizer/`; no separate tokenizer clone is needed.
+
+Experiments 02 and 06 have saved outputs, but no runner in this checkout. Training requires local files in `data/`. Checkpoints are not committed. Experiment 03 requires the local checkpoint `experiments/exp02_controlled_training/models/exp02_controlled_40k.pt` before it can run.

@@ -1,41 +1,28 @@
 
-import sys
+"""Generate text using the trained 4-head attention model."""
+
 from pathlib import Path
 
 import torch
 
-from language_model.models import (
-    SingleHeadLanguageModel,
-    ResidualSingleHeadLanguageModel,
-    ResidualMLPLanguageModel,
-)
+from language_model.models import FourHeadResidualMLPLanguageModel
+from language_model.tokenizer import Tokenizer
 
 
-# ---- paths ----
-
-TOKENIZER_DIR = Path.home() / "tokenizer" / "tokenizer"
-
+# Model and tokenizer paths
 TOKENIZER_MODEL_PATH = (
-    TOKENIZER_DIR
-    / "artifacts"
+    Path(__file__).resolve().parent
+    / "language_model"
     / "tokenizer"
-    / "v1"
     / "tokenizer_model.json"
 )
 
-# Change this path to switch checkpoints.
-CHECKPOINT_PATH = Path("experiments/exp06_residual_50k/models/exp06_scratch_residual_50k.pt")
+CHECKPOINT_PATH = Path(
+    "experiments/exp09_multihead/models/exp09_residual_mlp_4head_75k.pt"
+)
 
 
-# ---- import YOUR tokenizer ----
-
-sys.path.insert(0, str(TOKENIZER_DIR))
-
-from tokenizer import Tokenizer
-
-
-# ---- generation settings ----
-
+# Generation settings
 MAX_NEW_TOKENS = 100
 TEMPERATURE = 0.8
 TOP_K = 50
@@ -43,50 +30,31 @@ TOP_K = 50
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-# ---- load YOUR tokenizer ----
-
+# Load tokenizer
 tokenizer = Tokenizer(TOKENIZER_MODEL_PATH)
 
 
-# ---- load trained model ----
-
+# Load trained model
 checkpoint = torch.load(
     CHECKPOINT_PATH,
     map_location=device,
     weights_only=True,
 )
 
+if checkpoint["architecture"] != "residual_mlp_4head":
+    raise ValueError("Expected a 4-head MLP checkpoint.")
+
 config = checkpoint["config"]
 
-architecture = checkpoint.get("architecture", "baseline")
-
-if architecture == "residual":
-    model = ResidualSingleHeadLanguageModel(**config).to(device)
-elif architecture == "residual_mlp":
-    model = ResidualMLPLanguageModel(**config).to(device)
-elif architecture == "baseline":
-    model = SingleHeadLanguageModel(**config).to(device)
-else:
-    raise ValueError(f"Unknown architecture: {architecture}")
-
+model = FourHeadResidualMLPLanguageModel(**config).to(device)
 model.load_state_dict(checkpoint["model_state_dict"])
-
 model.eval()
 
-
-# ---- sanity check ----
-
-assert tokenizer.vocab_size == config["vocab_size"], (
-    f"Tokenizer vocab = {tokenizer.vocab_size}, "
-    f"model vocab = {config['vocab_size']}"
-)
+assert tokenizer.vocab_size == config["vocab_size"]
 
 
-# ---- generation ----
-
-@torch.no_grad()
+@torch.inference_mode()
 def generate(prompt):
-
     prompt_ids = tokenizer.encode(prompt)
 
     if not prompt_ids:
@@ -95,7 +63,7 @@ def generate(prompt):
     token_ids = list(prompt_ids)
 
     for _ in range(MAX_NEW_TOKENS):
-
+        # Keep tokens within the 128-token context limit.
         context = token_ids[-config["context_length"]:]
 
         x = torch.tensor(
@@ -104,72 +72,45 @@ def generate(prompt):
             device=device,
         )
 
-        logits = model(x)
-
-        # Predict the next token from the last position.
-        logits = logits[:, -1, :]
-
-        # Temperature
+        # Predict next-token probabilities.
+        logits = model(x)[:, -1, :]
         logits = logits / TEMPERATURE
 
-        # Top-k sampling
-        top_values, top_indices = torch.topk(
-            logits,
-            k=TOP_K,
-            dim=-1,
-        )
+        # Sample from the top 50 candidates.
+        values, indices = torch.topk(logits, k=TOP_K, dim=-1)
+        probabilities = torch.softmax(values, dim=-1)
 
-        probabilities = torch.softmax(
-            top_values,
-            dim=-1,
-        )
+        sampled = torch.multinomial(probabilities, num_samples=1)
+        next_token = indices.gather(-1, sampled).item()
 
-        sampled_index = torch.multinomial(
-            probabilities,
-            num_samples=1,
-        )
-
-        next_token = top_indices.gather(
-            -1,
-            sampled_index,
-        ).item()
-
-        # Stop at end-of-text.
         if next_token == tokenizer.eot_id:
             break
 
         token_ids.append(next_token)
 
-    generated_ids = token_ids[len(prompt_ids):]
-
-    return tokenizer.decode(generated_ids)
+    return tokenizer.decode(token_ids[len(prompt_ids):])
 
 
-# ---- interactive mode ----
+def main():
+    print("\n4-Head Attention + MLP Model")
+    print(f"Checkpoint: {CHECKPOINT_PATH.name}")
+    print(f"Device: {device}")
+    print(f"Training steps: {checkpoint['train_steps']}")
+    print(f"Context length: {config['context_length']}")
+    print("\nType 'exit' to quit.")
 
-print()
-print("Single-Head Language Model loaded.")
-print(f"Checkpoint: {CHECKPOINT_PATH}")
-print(f"Architecture: {architecture}")
-print(f"Device: {device}")
-print(f"Vocabulary: {tokenizer.vocab_size}")
-print(f"Context length: {config['context_length']}")
-print(f"Embedding dim: {config['embed_dim']}")
-print(f"Head size: {config['head_size']}")
-print()
-print("Type 'exit' to quit.")
+    while True:
+        try:
+            prompt = input("\nYou: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+
+        if prompt.lower() == "exit":
+            break
+
+        if prompt:
+            print("Model:", generate(prompt))
 
 
-while True:
-
-    prompt = input("\nYou: ").strip()
-
-    if prompt.lower() == "exit":
-        break
-
-    if not prompt:
-        continue
-
-    response = generate(prompt)
-
-    print("Model:", response)
+if __name__ == "__main__":
+    main()

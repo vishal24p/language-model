@@ -1,6 +1,6 @@
 [project]
 name = "llm"
-version = "0.1.0"
+version = "0.1.1"
 requires-python = ">=3.11"
 dependencies = [
     "huggingface-hub>=2.2.0",
@@ -25,3 +25,11 @@ dev = [
     "ipykernel==7.3.0",
     "jupyterlab==4.6.3",
 ]
+test = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=language_model.tokenizer --cov-branch --cov-report=term-missing --cov-fail-under=100"

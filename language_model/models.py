@@ -137,3 +137,67 @@ class ResidualMLPLanguageModel(ResidualSingleHeadLanguageModel):
         x = x + self.mlp(x)
 
         return self.lm_head(x)
+
+
+
+class FourHeadAttention(SingleHeadAttention):
+    """Split the attention features into four independent heads."""
+
+    def __init__(self, embed_dim, head_size, context_length):
+        if head_size % 4 != 0:
+            raise ValueError("head_size must be divisible by 4.")
+
+        super().__init__(embed_dim, head_size, context_length)
+
+    def forward(self, x):
+        batch_size, sequence_length, _ = x.shape
+        head_dim = self.head_size // 4
+
+        # Split 64 features into 4 heads of 16 features each.
+        query = self.query(x).reshape(
+            batch_size, sequence_length, 4, head_dim
+        ).transpose(1, 2)
+
+        key = self.key(x).reshape(
+            batch_size, sequence_length, 4, head_dim
+        ).transpose(1, 2)
+
+        value = self.value(x).reshape(
+            batch_size, sequence_length, 4, head_dim
+        ).transpose(1, 2)
+
+        # Each head computes its own attention weights.
+        scores = query @ key.transpose(-2, -1)
+        scores = scores / (head_dim ** 0.5)
+
+        mask = self.causal_mask[
+            :sequence_length, :sequence_length
+        ]
+        scores = scores.masked_fill(~mask, float("-inf"))
+
+        weights = t.softmax(scores, dim=-1)
+        context = weights @ value
+
+        # Combine the four heads back into 64 features.
+        return context.transpose(1, 2).contiguous().reshape(
+            batch_size, sequence_length, self.head_size
+        )
+
+
+class FourHeadResidualMLPLanguageModel(ResidualMLPLanguageModel):
+    """Experiment 08 model with four attention heads instead of one."""
+
+    def __init__(self, vocab_size, context_length, embed_dim, head_size):
+        super().__init__(
+            vocab_size, context_length, embed_dim, head_size
+        )
+
+        # Keep the original attention weight initialization.
+        original_attention = self.attention
+
+        self.attention = FourHeadAttention(
+            embed_dim, head_size, context_length
+        )
+        self.attention.load_state_dict(
+            original_attention.state_dict()
+        )

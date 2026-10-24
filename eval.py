@@ -18,6 +18,12 @@ from language_model.models import (
 )
 from language_model.data import val_data
 
+from language_model.models import (
+    SingleHeadLanguageModel,
+    ResidualSingleHeadLanguageModel,
+    ResidualMLPLanguageModel,
+    FourHeadResidualMLPLanguageModel,
+)
 
 CHECKPOINT_PATH = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(
     "experiments/exp03_learning_rate/models/exp03_lr_3e-4_50k.pt"
@@ -50,6 +56,8 @@ def evaluate():
         model = ResidualSingleHeadLanguageModel(**config).to(device)
     elif architecture == "residual_mlp":
         model = ResidualMLPLanguageModel(**config).to(device)
+    elif architecture == "residual_mlp_4head":
+        model = FourHeadResidualMLPLanguageModel(**config).to(device)
     else:
         raise ValueError(f"Unknown architecture: {architecture}")
 
